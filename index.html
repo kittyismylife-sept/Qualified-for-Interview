@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    :root {
+      --toyota-red: #EB0A1E;
+      --toyota-black: #000000;
+      --toyota-gray: #58595B;
+    }
+
+    body { font-family: 'Kanit', sans-serif; background: #e6e6e6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+    
+    .card { 
+      background: white; 
+      width: 100%; 
+      max-width: 450px; 
+      padding: 40px 30px; 
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15); 
+      text-align: center; 
+      border-top: 5px solid var(--toyota-red);
+      position: relative;
+    }
+
+    .brand-name {
+      color: var(--toyota-red);
+      font-size: 36px;
+      font-weight: 800;
+      margin: 0 0 10px 0;
+      line-height: 1;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    h2 { 
+        color: var(--toyota-black); 
+        margin-top: 5px; 
+        margin-bottom: 5px; 
+        font-weight: 600; 
+        text-transform: uppercase; 
+        letter-spacing: 1px; 
+        font-size: 22px; 
+    }
+
+    p { color: var(--toyota-gray); margin: 5px 0; font-size: 15px; }
+    
+    input { 
+      width: 100%; 
+      padding: 14px; 
+      margin: 25px 0; 
+      border: 1px solid #ccc; 
+      border-radius: 4px; 
+      text-align: center; 
+      font-size: 18px; 
+      font-family: 'Kanit'; 
+      outline: none; 
+      transition: 0.3s; 
+      box-sizing: border-box; 
+      background: #f9f9f9;
+    }
+    input:focus { border-color: var(--toyota-red); background: white; }
+    
+    button { 
+      width: 100%; 
+      padding: 14px; 
+      border: none; 
+      border-radius: 4px; 
+      font-size: 16px; 
+      cursor: pointer; 
+      font-family: 'Kanit'; 
+      margin-top: 12px; 
+      font-weight: 600; 
+      transition: 0.2s; 
+      text-transform: uppercase;
+    }
+    
+    .btn-main { background: var(--toyota-red); color: white; }
+    .btn-main:hover { background: #c4001a; }
+
+    .btn-confirm { background: #000; color: white; }
+    .btn-decline { background: white; border: 1px solid #999; color: #666; }
+    .btn-decline:hover { border-color: var(--toyota-red); color: var(--toyota-red); }
+
+    button:active { transform: scale(0.98); }
+    
+    .hidden { display: none; }
+    
+    .info-box { 
+      background: #fff; 
+      padding: 20px; 
+      border: 1px solid #eee;
+      border-radius: 4px; 
+      text-align: left; 
+      margin: 25px 0; 
+      border-left: 4px solid var(--toyota-red); 
+    }
+    .info-label { font-size: 13px; color: #888; text-transform: uppercase; }
+    .info-value { font-size: 18px; font-weight: 500; color: #000; margin-bottom: 12px; display: block; }
+    
+    .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--toyota-red); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div id="view-login" class="card">
+    <h1 class="brand-name">TOYOTA</h1>
+    <h2>Internship Status Check</h2>
+    <p>ระบบตรวจสอบผลการคัดเลือกนักศึกษาฝึกงาน</p>
+    
+    <input type="text" id="input-id" placeholder="เลขบัตรประชาชน 6 หลักสุดท้าย" maxlength="6">
+    
+    <button class="btn-main" onclick="startSearch()">ตรวจสอบสถานะ</button>
+    
+    <div id="loader-login" class="loader hidden"></div>
+    <p id="msg-error" style="color:var(--toyota-red); display:none; margin-top:15px; font-weight:500;">❌ ไม่พบข้อมูลในระบบ</p>
+  </div>
+
+  <div id="view-result" class="card hidden">
+    <h1 class="brand-name" style="font-size: 24px;">TOYOTA</h1>
+    
+    <h2 style="color:#000; font-size: 18px; margin-top:15px;">Qualified for Interview</h2>
+    
+    <p style="color:#28a745; font-weight:800; font-size: 26px; margin: 15px 0;">🎉 มีสิทธิ์เข้ารับการสัมภาษณ์ฝึกงาน</p>
+    
+    <p><span id="res-name" style="color:#000; font-weight:600; font-size: 18px;"></span></p>
+    
+    <div class="info-box">
+      <span class="info-label">Group</span>
+      <span class="info-value" id="res-group">...</span>
+      
+      <span class="info-label">Location</span>
+      <span class="info-value" id="res-loc">...</span>
+      
+      <span class="info-label">Email</span>
+      <span class="info-value" id="res-email" style="text-transform: lowercase;">...</span>
+    </div>
+
+    <button class="btn-confirm" onclick="confirmAction('CONFIRM')">ยืนยันเข้ารับการสัมภาษณ์</button>
+    <button class="btn-decline" onclick="confirmAction('DECLINE')">ปฏิเสธการสัมภาษณ์</button>
+  </div>
+
+  <div id="view-success" class="card hidden">
+    <div style="font-size:60px; color:var(--toyota-red);">✅</div>
+    <h2>Completed</h2>
+    
+    <p id="success-msg" style="margin-top: 15px; line-height: 1.6;">บันทึกข้อมูลเรียบร้อย</p>
+    
+    <br>
+    <button class="btn-main" onclick="resetSystem()">กลับหน้าหลัก</button>
+  </div>
+
+  <script>
+    let userData = null;
+
+    function startSearch() {
+      const id = document.getElementById('input-id').value.trim();
+      if (id.length < 6) {
+      }
+      if (!id) return;
+
+      document.getElementById('loader-login').classList.remove('hidden');
+      document.getElementById('msg-error').style.display = 'none';
+
+      google.script.run.withSuccessHandler(showResult).checkID(id);
+    }
+
+    function showResult(result) {
+      document.getElementById('loader-login').classList.add('hidden');
+      
+      if (result.found) {
+        userData = result;
+        document.getElementById('res-name').innerText = result.name;
+        document.getElementById('res-group').innerText = result.group;
+        document.getElementById('res-loc').innerText = result.location;
+        document.getElementById('res-email').innerText = result.email;
+        
+        switchPage('view-result');
+      } else {
+        document.getElementById('msg-error').style.display = 'block';
+      }
+    }
+
+    function confirmAction(action) {
+      let titleText = "";
+      let confirmBtnColor = "";
+      
+      if(action === 'CONFIRM') {
+        titleText = "ยืนยันการเข้ารับสัมภาษณ์ใช่หรือไม่?"; 
+        confirmBtnColor = "#000000";
+      } else {
+        titleText = "ต้องการปฏิเสธการเข้าสัมภาษณ์ใช่หรือไม่?";
+        confirmBtnColor = "#EB0A1E";
+      }
+
+      Swal.fire({
+        title: titleText,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: confirmBtnColor,
+        cancelButtonColor: '#999',
+        confirmButtonText: 'ยืนยัน',
+        cancelButtonText: 'ยกเลิก',
+        reverseButtons: true,
+        fontFamily: 'Kanit'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          document.body.style.cursor = 'wait';
+          
+          google.script.run.withSuccessHandler(() => {
+            document.body.style.cursor = 'default';
+            
+            const msgBox = document.getElementById('success-msg');
+            if (action === 'CONFIRM') {
+               msgBox.innerHTML = "พี่ ๆ HR จะส่งลิงก์สัมภาษณ์ให้ทางอีเมลในช่วงวันที่ 2–6 กุมภาพันธ์นี้<br>โดยน้อง ๆ จะต้องเข้ารับการสัมภาษณ์ให้เรียบร้อยภายในวันที่ 13 กุมภาพันธ์";
+            } else {
+               msgBox.innerText = "บันทึกข้อมูลเรียบร้อย";
+            }
+            
+            switchPage('view-success');
+          }).processUserAction(userData, action);
+        }
+      });
+    }
+
+    function resetSystem() {
+      document.getElementById('input-id').value = "";
+      userData = null;
+      switchPage('view-login');
+    }
+
+    function switchPage(pageId) {
+      document.querySelectorAll('.card').forEach(el => el.classList.add('hidden'));
+      document.getElementById(pageId).classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
